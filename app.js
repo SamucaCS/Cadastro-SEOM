@@ -1,7 +1,7 @@
 const SUPABASE_URL = "https://smvlyewxhrihqqcaegnr.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdmx5ZXd4aHJpaHFxY2FlZ25yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMTQxNzYsImV4cCI6MjA3OTc5MDE3Nn0.GYQCiJGV42ud8agWyuQ_6uLswmxFPaL6tVdm3VIN8g8";
+const SUPABASE_ANON_KEY =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdmx5ZXd4aHJpaHFxY2FlZ25yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMTQxNzYsImV4cCI6MjA3OTc5MDE3Nn0.GYQCiJGV42ud8agWyuQ_6uLswmxFPaL6tVdm3VIN8g8";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
 const ESCOLAS_SEOM = [
     "Unidade Regional De Ensino - Suzano",
     "ALFREDO ROBERTO",
@@ -62,7 +62,6 @@ document.addEventListener("DOMContentLoaded", () => {
     setupForm();
     popularSelectFiltroEscolas();
     setupFiltros();
-    setupFileInputs(); // <<< novo: deixa o texto dos uploads bonitinho
     carregarRegistros();
     atualizarRotuloBotao();
 });
@@ -131,7 +130,6 @@ function popularSelectFiltroEscolas() {
         filtroEscola.appendChild(opt);
     });
 }
-
 function setupTemaToggle() {
     const selectTema = document.getElementById("tema");
     const sectionsTema = document.querySelectorAll(".tema-section");
@@ -166,14 +164,14 @@ function setupForm() {
             return;
         }
 
-        const anexos = getAnexosPorTema(tema);
+        const anexosFiles = coletarArquivosDoTema(tema);
 
         try {
             if (editingId) {
-                await atualizarRegistro(editingId, payload, anexos);
+                await atualizarRegistro(editingId, payload, tema, anexosFiles);
                 alert("Registro atualizado com sucesso!");
             } else {
-                await salvarRegistro(payload, anexos);
+                await salvarRegistro(payload, tema, anexosFiles);
                 alert("Registro salvo com sucesso!");
             }
 
@@ -296,72 +294,91 @@ function valueTrim(id) {
     return (el.value || "").trim();
 }
 
-/* ==== ANEXOS ==== */
-
-function getAnexosPorTema(tema) {
-    let input = null;
-
+function coletarArquivosDoTema(tema) {
     if (tema === "obras") {
-        input = document.getElementById("obras-anexos");
-    } else if (tema === "solicitacao") {
-        input = document.getElementById("solicitacao-anexos");
-    } else if (tema === "termo") {
-        input = document.getElementById("termo-anexos");
+        const input = document.getElementById("obras-anexos");
+        return input ? input.files : null;
     }
-
-    if (!input || !input.files || !input.files.length) {
-        return [];
+    if (tema === "solicitacao") {
+        const input = document.getElementById("solicitacao-anexos");
+        return input ? input.files : null;
     }
-
-    return Array.from(input.files);
+    if (tema === "termo") {
+        const input = document.getElementById("termo-anexos");
+        return input ? input.files : null;
+    }
+    return null;
 }
 
-function setupFileInputs() {
-    const inputs = document.querySelectorAll(".file-input");
+async function processarAnexosParaRegistro(registro, tema, fileList, modo = "append") {
+    const existentes = Array.isArray(registro.anexos) ? registro.anexos : [];
+    const novos = await uploadAnexosParaRegistro(registro.id, tema, fileList);
 
-    inputs.forEach(input => {
-        const wrapper = input.closest(".file-upload");
-        if (!wrapper) return;
-        const info = wrapper.querySelector(".file-label-info");
-        if (!info) return;
+    if (!novos.length) return registro;
+    let anexosAtualizados;
 
-        input.addEventListener("change", () => {
-            if (!input.files || !input.files.length) {
-                info.textContent = "Nenhum arquivo selecionado";
-                return;
-            }
+    if (modo === "replace") {
+        anexosAtualizados = novos;
+    } else {
+        anexosAtualizados = existentes.concat(novos);
+    }
 
-            if (input.files.length === 1) {
-                info.textContent = input.files[0].name;
-            } else {
-                info.textContent = `${input.files.length} arquivos selecionados`;
-            }
-        });
-    });
+    const { data, error } = await supabaseClient
+        .from("seom_registros")
+        .update({ anexos: anexosAtualizados })
+        .eq("id", registro.id)
+        .select()
+        .single();
+
+    if (error) {
+        console.error("Erro ao salvar metadados dos anexos:", error);
+        return { ...registro, anexos: anexosAtualizados };
+    }
+
+    return data;
 }
 
-async function uploadAnexosParaRegistro(registroId, tipo, arquivos) {
-    if (!arquivos || !arquivos.length) return;
 
-    const bucket = "seom_anexos";
+async function uploadAnexosParaRegistro(registroId, tema, fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length) return [];
 
-    for (const file of arquivos) {
-        const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
-        const timestamp = Date.now();
-        const rand = Math.random().toString(36).slice(2, 8);
-        const path = `${tipo || "geral"}/${registroId}/${timestamp}_${rand}_${safeName}`;
+    const uploads = files.map(async file => {
+        const sanitizedName = file.name.replace(/[^\w.\-]+/g, "_");
+        const path = `${registroId}/${Date.now()}-${sanitizedName}`;
 
-        const { error } = await supabaseClient.storage
-            .from(bucket)
+        const { error } = await supabaseClient
+            .storage
+            .from("seom_anexos")
             .upload(path, file);
 
         if (error) {
-            console.error("Erro ao enviar anexo:", file.name, error.message);
-        } else {
-            console.log("Anexo enviado:", path);
+            console.error("Erro ao fazer upload de anexo:", error);
+            return null;
         }
-    }
+
+        const { data } = supabaseClient
+            .storage
+            .from("seom_anexos")
+            .getPublicUrl(path);
+
+        const publicUrl = data?.publicUrl || null;
+
+        return {
+            path,
+            url: publicUrl,
+            nome: file.name,
+            tamanho: file.size,
+            tipo: file.type,
+            tema,
+            uploaded_at: new Date().toISOString()
+        };
+    });
+
+    const resultados = await Promise.all(uploads);
+    return resultados.filter(Boolean);
 }
+
 async function carregarRegistros() {
     try {
         const { data, error } = await supabaseClient
@@ -382,7 +399,8 @@ async function carregarRegistros() {
 
     renderTabela();
 }
-async function salvarRegistro(payload, anexos = []) {
+
+async function salvarRegistro(payload, tema, anexosFiles) {
     const { data, error } = await supabaseClient
         .from("seom_registros")
         .insert(payload)
@@ -393,17 +411,22 @@ async function salvarRegistro(payload, anexos = []) {
         throw error;
     }
 
-    if (anexos && anexos.length && data && data.id) {
-        await uploadAnexosParaRegistro(data.id, payload.tipo, anexos);
+    let registro = data;
+
+    if (anexosFiles && anexosFiles.length) {
+        // cadastro novo: acrescenta anexos
+        registro = await processarAnexosParaRegistro(registro, tema, anexosFiles, "append");
     }
 
-    registros.unshift(data);
+
+    registros.unshift(registro);
     renderTabela();
 }
 
-async function atualizarRegistro(id, payload, anexos = []) {
+async function atualizarRegistro(id, payload, tema, anexosFiles) {
     const payloadUpdate = { ...payload };
     delete payloadUpdate.created_at;
+    delete payloadUpdate.anexos;
 
     const { data, error } = await supabaseClient
         .from("seom_registros")
@@ -419,13 +442,15 @@ async function atualizarRegistro(id, payload, anexos = []) {
         throw new Error("Nenhuma linha atualizada. Verifique RLS e ID.");
     }
 
-    const updated = data[0];
+    let registro = data[0];
 
-    if (anexos && anexos.length) {
-        await uploadAnexosParaRegistro(updated.id, payload.tipo, anexos);
+    if (anexosFiles && anexosFiles.length) {
+        // edição: substitui anexos antigos pelos novos
+        registro = await processarAnexosParaRegistro(registro, tema, anexosFiles, "replace");
     }
 
-    registros = registros.map(r => (r.id === updated.id ? updated : r));
+
+    registros = registros.map(r => (r.id === registro.id ? registro : r));
     renderTabela();
 }
 
@@ -499,13 +524,6 @@ function entrarModoEdicao(registro) {
         document.getElementById("termo-observacao").value =
             registro.observacao_extra || registro.descricao || "";
     }
-
-    const obrasAnexos = document.getElementById("obras-anexos");
-    const solicitacaoAnexos = document.getElementById("solicitacao-anexos");
-    const termoAnexos = document.getElementById("termo-anexos");
-    if (obrasAnexos) obrasAnexos.value = "";
-    if (solicitacaoAnexos) solicitacaoAnexos.value = "";
-    if (termoAnexos) termoAnexos.value = "";
 }
 
 function setupFiltros() {
@@ -564,15 +582,49 @@ function renderTabela() {
         tdData.textContent = formatarData(registro.data_referencia || registro.created_at);
         tr.appendChild(tdData);
 
+        const tdAnexos = document.createElement("td");
+        const anexos = Array.isArray(registro.anexos) ? registro.anexos : [];
+
+        if (!anexos.length) {
+            tdAnexos.textContent = "-";
+        } else {
+            const countSpan = document.createElement("div");
+            countSpan.className = "anexos-count";
+            countSpan.textContent = `${anexos.length} arquivo(s)`;
+            tdAnexos.appendChild(countSpan);
+            const linksWrapper = document.createElement("div");
+            linksWrapper.className = "anexos-links";
+
+            anexos.forEach((anexo, index) => {
+                if (!anexo || !anexo.url) return;
+
+                const link = document.createElement("a");
+                link.href = anexo.url;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.className = "anexo-pill";
+                link.textContent = anexo.nome || `Arquivo ${index + 1}`;
+
+                linksWrapper.appendChild(link);
+            });
+
+            tdAnexos.appendChild(linksWrapper);
+        }
+
+        tr.appendChild(tdAnexos);
+
+
         const tdAcoes = document.createElement("td");
         const actions = document.createElement("div");
         actions.className = "table-actions";
+
         const btnEditar = document.createElement("button");
         btnEditar.className = "action-btn";
         btnEditar.textContent = "Editar";
         btnEditar.addEventListener("click", () => {
             entrarModoEdicao(registro);
         });
+
         const btnExcluir = document.createElement("button");
         btnExcluir.className = "action-btn danger";
         btnExcluir.textContent = "Excluir";
