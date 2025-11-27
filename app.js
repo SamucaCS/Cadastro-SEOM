@@ -1,7 +1,9 @@
 const SUPABASE_URL = "https://smvlyewxhrihqqcaegnr.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtdmx5ZXd4aHJpaHFxY2FlZ25yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQyMTQxNzYsImV4cCI6MjA3OTc5MDE3Nn0.GYQCiJGV42ud8agWyuQ_6uLswmxFPaL6tVdm3VIN8g8";
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 const ESCOLAS_SEOM = [
+    "Unidade Regional De Ensino - Suzano",
     "ALFREDO ROBERTO",
     "ALICE ROMANOS PROFª",
     "ANDERSON DA SILVA SOARES",
@@ -60,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupForm();
     popularSelectFiltroEscolas();
     setupFiltros();
+    setupFileInputs(); // <<< novo: deixa o texto dos uploads bonitinho
     carregarRegistros();
     atualizarRotuloBotao();
 });
@@ -163,14 +166,14 @@ function setupForm() {
             return;
         }
 
+        const anexos = getAnexosPorTema(tema);
+
         try {
             if (editingId) {
-                // atualização
-                await atualizarRegistro(editingId, payload);
+                await atualizarRegistro(editingId, payload, anexos);
                 alert("Registro atualizado com sucesso!");
             } else {
-                // criação
-                await salvarRegistro(payload);
+                await salvarRegistro(payload, anexos);
                 alert("Registro salvo com sucesso!");
             }
 
@@ -293,6 +296,72 @@ function valueTrim(id) {
     return (el.value || "").trim();
 }
 
+/* ==== ANEXOS ==== */
+
+function getAnexosPorTema(tema) {
+    let input = null;
+
+    if (tema === "obras") {
+        input = document.getElementById("obras-anexos");
+    } else if (tema === "solicitacao") {
+        input = document.getElementById("solicitacao-anexos");
+    } else if (tema === "termo") {
+        input = document.getElementById("termo-anexos");
+    }
+
+    if (!input || !input.files || !input.files.length) {
+        return [];
+    }
+
+    return Array.from(input.files);
+}
+
+function setupFileInputs() {
+    const inputs = document.querySelectorAll(".file-input");
+
+    inputs.forEach(input => {
+        const wrapper = input.closest(".file-upload");
+        if (!wrapper) return;
+        const info = wrapper.querySelector(".file-label-info");
+        if (!info) return;
+
+        input.addEventListener("change", () => {
+            if (!input.files || !input.files.length) {
+                info.textContent = "Nenhum arquivo selecionado";
+                return;
+            }
+
+            if (input.files.length === 1) {
+                info.textContent = input.files[0].name;
+            } else {
+                info.textContent = `${input.files.length} arquivos selecionados`;
+            }
+        });
+    });
+}
+
+async function uploadAnexosParaRegistro(registroId, tipo, arquivos) {
+    if (!arquivos || !arquivos.length) return;
+
+    const bucket = "seom_anexos";
+
+    for (const file of arquivos) {
+        const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+        const timestamp = Date.now();
+        const rand = Math.random().toString(36).slice(2, 8);
+        const path = `${tipo || "geral"}/${registroId}/${timestamp}_${rand}_${safeName}`;
+
+        const { error } = await supabaseClient.storage
+            .from(bucket)
+            .upload(path, file);
+
+        if (error) {
+            console.error("Erro ao enviar anexo:", file.name, error.message);
+        } else {
+            console.log("Anexo enviado:", path);
+        }
+    }
+}
 async function carregarRegistros() {
     try {
         const { data, error } = await supabaseClient
@@ -313,8 +382,7 @@ async function carregarRegistros() {
 
     renderTabela();
 }
-
-async function salvarRegistro(payload) {
+async function salvarRegistro(payload, anexos = []) {
     const { data, error } = await supabaseClient
         .from("seom_registros")
         .insert(payload)
@@ -324,11 +392,16 @@ async function salvarRegistro(payload) {
     if (error) {
         throw error;
     }
+
+    if (anexos && anexos.length && data && data.id) {
+        await uploadAnexosParaRegistro(data.id, payload.tipo, anexos);
+    }
+
     registros.unshift(data);
     renderTabela();
 }
 
-async function atualizarRegistro(id, payload) {
+async function atualizarRegistro(id, payload, anexos = []) {
     const payloadUpdate = { ...payload };
     delete payloadUpdate.created_at;
 
@@ -347,6 +420,11 @@ async function atualizarRegistro(id, payload) {
     }
 
     const updated = data[0];
+
+    if (anexos && anexos.length) {
+        await uploadAnexosParaRegistro(updated.id, payload.tipo, anexos);
+    }
+
     registros = registros.map(r => (r.id === updated.id ? updated : r));
     renderTabela();
 }
@@ -421,6 +499,13 @@ function entrarModoEdicao(registro) {
         document.getElementById("termo-observacao").value =
             registro.observacao_extra || registro.descricao || "";
     }
+
+    const obrasAnexos = document.getElementById("obras-anexos");
+    const solicitacaoAnexos = document.getElementById("solicitacao-anexos");
+    const termoAnexos = document.getElementById("termo-anexos");
+    if (obrasAnexos) obrasAnexos.value = "";
+    if (solicitacaoAnexos) solicitacaoAnexos.value = "";
+    if (termoAnexos) termoAnexos.value = "";
 }
 
 function setupFiltros() {
