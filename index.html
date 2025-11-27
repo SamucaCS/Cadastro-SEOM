@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SEOM - Cadastro & Painel</title>
+    <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+    <div class="bg-galaxy"></div>
+
+    <header class="site-header">
+        <div class="site-header-inner">
+            <div class="brand">
+                <div class="brand-logo"></div>
+                <div>
+                    <h1>SEOM - Cadastro & Painel</h1>
+                    <p>Obras, solicitações e termos de visita • URE - Suzano</p>
+                </div>
+            </div>
+            <nav class="top-nav">
+                <button class="nav-btn active" data-view="cadastro">Cadastro</button>
+                <button class="nav-btn" data-view="painel">Registro de Cadastro</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="page">
+       
+        <section id="cadastro-view" class="page-section active">
+            <div class="card">
+                <header class="card-header">
+                    <h2>Novo registro</h2>
+                    <p>Preencha os dados conforme o tema selecionado.</p>
+                </header>
+
+                <form id="cadastro-form" class="form-grid">
+                    
+                    <div class="form-row full">
+                        <label for="tema">Tema</label>
+                        <select id="tema" name="tema" required>
+                            <option value="">Selecione o tema</option>
+                            <option value="obras">Obras e manutenção</option>
+                            <option value="solicitacao">Solicitação de manutenção</option>
+                            <option value="termo">Termo de visita</option>
+                        </select>
+                    </div>
+
+                    <div class="tema-section" data-tema="obras">
+                        <div class="form-row">
+                            <label for="obras-numero-solicitacao">Nº da solicitação</label>
+                            <input type="text" id="obras-numero-solicitacao" />
+                        </div>
+
+                        <div class="form-row">
+                            <label for="obras-escola">Escola / URE – Suzano</label>
+                            <select id="obras-escola" class="select-escola">
+                             
+                            </select>
+                        </div>
+
+                        <div class="form-row full">
+                            <label for="obras-assunto">Assunto</label>
+                            <textarea id="obras-assunto" rows="2"
+                                placeholder="Descreva brevemente o assunto"></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="obras-situacao">Situação</label>
+                            <select id="obras-situacao">
+                                <option value="">Selecione</option>
+                                <option value="em_andamento">Em andamento</option>
+                                <option value="concluido">Concluído</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row full">
+                            <label for="obras-observacao">Observação da situação</label>
+                            <textarea id="obras-observacao" rows="2"
+                                placeholder="Detalhe a situação, pendências, prazos..."></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="obras-data-solicitacao">Data da solicitação</label>
+                            <input type="date" id="obras-data-solicitacao" />
+                        </div>
+
+                        <div class="form-row">
+                            <label for="obras-data-abertura">Data de abertura da obra</label>
+                            <input type="date" id="obras-data-abertura" />
+                        </div>
+
+                        <div class="form-row full">
+                            <label for="obras-contratante">Contratante</label>
+                            <input type="text" id="obras-contratante" placeholder="Informe o contratante" />
+                        </div>
+                    </div>
+
+                    <div class="tema-section" data-tema="solicitacao">
+                        <div class="form-row">
+                            <label for="solicitacao-numero-sei">Nº do SEI</label>
+                            <input type="text" id="solicitacao-numero-sei" />
+                        </div>
+
+                        <div class="form-row">
+                            <label for="solicitacao-escola">Escola / URE – Suzano</label>
+                            <select id="solicitacao-escola" class="select-escola">
+                               
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="solicitacao-status">Status</label>
+                            <select id="solicitacao-status">
+                                <option value="">Selecione</option>
+                                <option value="em_andamento">Em andamento</option>
+                                <option value="concluido">Concluído</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row full">
+                            <label for="solicitacao-observacao">Observação</label>
+                            <textarea id="solicitacao-observacao" rows="3"
+                                placeholder="Detalhe a situação da solicitação"></textarea>
+                        </div>
+                    </div>
+
+                
+                    <div class="tema-section" data-tema="termo">
+                        <div class="form-row">
+                            <label for="termo-escola">Escola / URE - Suzano</label>
+                            <select id="termo-escola" class="select-escola">
+                              
+                            </select>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="termo-data">Data</label>
+                            <input type="date" id="termo-data" />
+                        </div>
+
+                        <div class="form-row">
+                            <label for="termo-tema">Tema</label>
+                            <select id="termo-tema">
+                                <option value="">Selecione</option>
+                                <option value="obras">Obras</option>
+                                <option value="manutencao">Manutenção</option>
+                                <option value="obras_manutencao">Obras e manutenção</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row full">
+                            <label for="termo-observacao">Observações</label>
+                            <textarea id="termo-observacao" rows="3"
+                                placeholder="Registre as observações da visita, acordos e encaminhamentos."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="reset" class="btn ghost">Limpar</button>
+                        <button type="submit" class="btn primary">Salvar registro</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        
+        <section id="painel-view" class="page-section">
+            <div class="card">
+                <header class="card-header">
+                    <h2>Painel SEOM</h2>
+                    <p>Visualize e filtre os registros de obras, solicitações e termos de visita.</p>
+                </header>
+
+                
+                <div class="filters-grid">
+                    <div class="form-row">
+                        <label for="filter-tema">Tema</label>
+                        <select id="filter-tema" class="filter">
+                            <option value="">Todos</option>
+                            <option value="obras">Obras e manutenção</option>
+                            <option value="solicitacao">Solicitação de manutenção</option>
+                            <option value="termo">Termo de visita</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="filter-escola">Escola / URE</label>
+                        <select id="filter-escola" class="filter select-escola">
+                           
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <label for="filter-status">Situação / Status</label>
+                        <select id="filter-status" class="filter">
+                            <option value="">Todos</option>
+                            <option value="em_andamento">Em andamento</option>
+                            <option value="concluido">Concluído</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-wrapper">
+                    <table id="registros-table">
+                        <thead>
+                            <tr>
+                                <th>Tema</th>
+                                <th>Escola / URE</th>
+                                <th>Descrição</th>
+                                <th>Situação / Status</th>
+                                <th>Data</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                           
+                        </tbody>
+                    </table>
+                    <p id="empty-state" class="empty-state">Nenhum registro cadastrado até o momento.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <span>SEOM • Diretoria de Ensino de Suzano</span>
+        <span>Cadastro & Painel organizados em HTML, CSS e JS + Supabase</span>
+    </footer>
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
