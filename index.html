@@ -56,9 +56,7 @@
 
                         <div class="form-row">
                             <label for="obras-escola">Escola / URE - Suzano</label>
-                            <select id="obras-escola" class="select-escola">
-
-                            </select>
+                            <select id="obras-escola" class="select-escola"></select>
                         </div>
 
                         <div class="form-row full">
@@ -99,13 +97,7 @@
 
                         <div class="form-row full">
                             <label for="obras-anexos">Anexos (plantas, ofícios, relatórios, etc.)</label>
-                            <div class="file-upload">
-                                <input type="file" id="obras-anexos" class="file-input" multiple />
-                                <label for="obras-anexos" class="file-label">
-                                    <span class="file-label-main">Selecionar arquivos</span>
-                                    <span class="file-label-info">Nenhum arquivo selecionado</span>
-                                </label>
-                            </div>
+                            <input type="file" id="obras-anexos" multiple />
                         </div>
                     </div>
 
@@ -117,9 +109,7 @@
 
                         <div class="form-row">
                             <label for="solicitacao-escola">Escola / URE – Suzano</label>
-                            <select id="solicitacao-escola" class="select-escola">
-
-                            </select>
+                            <select id="solicitacao-escola" class="select-escola"></select>
                         </div>
 
                         <div class="form-row">
@@ -138,23 +128,16 @@
                         </div>
 
                         <div class="form-row full">
-                            <label for="solicitacao-anexos">Anexos (SEI, prints, documentos, etc.)</label>
-                            <div class="file-upload">
-                                <input type="file" id="solicitacao-anexos" class="file-input" multiple />
-                                <label for="solicitacao-anexos" class="file-label">
-                                    <span class="file-label-main">Selecionar arquivos</span>
-                                    <span class="file-label-info">Nenhum arquivo selecionado</span>
-                                </label>
-                            </div>
+                            <label for="solicitacao-anexos">Anexos (ofícios, relatórios, prints, etc.)</label>
+                            <input type="file" id="solicitacao-anexos" multiple />
                         </div>
                     </div>
 
+                    <!-- TERMO -->
                     <div class="tema-section" data-tema="termo">
                         <div class="form-row">
                             <label for="termo-escola">Escola / URE - Suzano</label>
-                            <select id="termo-escola" class="select-escola">
-
-                            </select>
+                            <select id="termo-escola" class="select-escola"></select>
                         </div>
 
                         <div class="form-row">
@@ -179,14 +162,8 @@
                         </div>
 
                         <div class="form-row full">
-                            <label for="termo-anexos">Anexos (termo assinado, fotos, etc.)</label>
-                            <div class="file-upload">
-                                <input type="file" id="termo-anexos" class="file-input" multiple />
-                                <label for="termo-anexos" class="file-label">
-                                    <span class="file-label-main">Selecionar arquivos</span>
-                                    <span class="file-label-info">Nenhum arquivo selecionado</span>
-                                </label>
-                            </div>
+                            <label for="termo-anexos">Anexos (registros fotográficos, documentos, etc.)</label>
+                            <input type="file" id="termo-anexos" multiple />
                         </div>
                     </div>
 
@@ -198,14 +175,12 @@
             </div>
         </section>
 
-
         <section id="painel-view" class="page-section">
             <div class="card">
                 <header class="card-header">
                     <h2>Painel SEOM</h2>
                     <p>Visualize e filtre os registros de obras, solicitações e termos de visita.</p>
                 </header>
-
 
                 <div class="filters-grid">
                     <div class="form-row">
@@ -220,9 +195,7 @@
 
                     <div class="form-row">
                         <label for="filter-escola">Escola / URE</label>
-                        <select id="filter-escola" class="filter select-escola">
-
-                        </select>
+                        <select id="filter-escola" class="filter select-escola"></select>
                     </div>
 
                     <div class="form-row">
@@ -244,12 +217,11 @@
                                 <th>Descrição</th>
                                 <th>Situação / Status</th>
                                 <th>Data</th>
+                                <th>Anexos</th>
                                 <th>Ações</th>
                             </tr>
                         </thead>
-                        <tbody>
-
-                        </tbody>
+                        <tbody></tbody>
                     </table>
                     <p id="empty-state" class="empty-state">Nenhum registro cadastrado até o momento.</p>
                 </div>
@@ -259,9 +231,7 @@
 
     <footer class="site-footer">
         <span>SEOM • Diretoria de Ensino de Suzano</span>
-        <span>Cadastro & Painel organizados em HTML, CSS e JS + Supabase</span>
     </footer>
-
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
     <script src="app.js"></script>
