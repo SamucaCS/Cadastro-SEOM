@@ -45,6 +45,7 @@
                             <option value="obras">Obras</option>
                             <option value="solicitacao">Solicitação de manutenção</option>
                             <option value="termo">Termo de visita</option>
+                            <option value="bi_manutencao">BI manutenção predial</option>
                         </select>
                     </div>
 
@@ -133,7 +134,6 @@
                         </div>
                     </div>
 
-                    <!-- TERMO -->
                     <div class="tema-section" data-tema="termo">
                         <div class="form-row">
                             <label for="termo-escola">Escola / URE - Suzano</label>
@@ -167,6 +167,39 @@
                         </div>
                     </div>
 
+                    <div class="tema-section" data-tema="bi_manutencao">
+                        <div class="form-row">
+                            <label for="bi-escola">Escola / URE - Suzano</label>
+                            <select id="bi-escola" class="select-escola"></select>
+                        </div>
+
+                        <div class="form-row">
+                            <label for="bi-data">Data</label>
+                            <input type="date" id="bi-data" />
+                        </div>
+
+                        <div class="form-row">
+                            <label for="bi-tema">Tema</label>
+                            <select id="bi-tema">
+                                <option value="">Selecione</option>
+                                <option value="obras">Obras</option>
+                                <option value="manutencao">Manutenção</option>
+                                <option value="obras_manutencao">Fiscalização</option>
+                            </select>
+                        </div>
+
+                        <div class="form-row full">
+                            <label for="bi-observacao">Observações</label>
+                            <textarea id="bi-observacao" rows="3"
+                                placeholder="Registre as observações da visita, acordos e encaminhamentos."></textarea>
+                        </div>
+
+                        <div class="form-row full">
+                            <label for="bi-anexos">Anexos (registros fotográficos, documentos, etc.)</label>
+                            <input type="file" id="bi-anexos" multiple />
+                        </div>
+                    </div>
+
                     <div class="form-actions">
                         <button type="reset" class="btn ghost">Limpar</button>
                         <button type="submit" class="btn primary">Salvar registro</button>
@@ -190,6 +223,7 @@
                             <option value="obras">Obras e manutenção</option>
                             <option value="solicitacao">Solicitação de manutenção</option>
                             <option value="termo">Termo de visita</option>
+                            <option value="bi_manutencao">BI manutenção predial</option>
                         </select>
                     </div>
 
