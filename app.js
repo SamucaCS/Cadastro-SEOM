@@ -86,7 +86,6 @@ function setupNavigation() {
         });
     });
 }
-
 function navegarParaCadastro() {
     const btnCadastro = document.querySelector('.nav-btn[data-view="cadastro"]');
     if (btnCadastro) btnCadastro.click();
@@ -130,6 +129,7 @@ function popularSelectFiltroEscolas() {
         filtroEscola.appendChild(opt);
     });
 }
+
 function setupTemaToggle() {
     const selectTema = document.getElementById("tema");
     const sectionsTema = document.querySelectorAll(".tema-section");
@@ -265,11 +265,13 @@ function montarPayloadPorTema(tema) {
         };
     }
 
-    if (tema === "termo") {
-        const escola = valueTrim("termo-escola");
-        const dataVisita = valueTrim("termo-data");
-        const temaVisita = document.getElementById("termo-tema").value;
-        const observacao = valueTrim("termo-observacao");
+    if (tema === "termo" || tema === "bi_manutencao") {
+        const prefix = tema === "termo" ? "termo" : "bi";
+
+        const escola = valueTrim(`${prefix}-escola`);
+        const dataVisita = valueTrim(`${prefix}-data`);
+        const temaVisita = document.getElementById(`${prefix}-tema`).value;
+        const observacao = valueTrim(`${prefix}-observacao`);
 
         if (!escola && !dataVisita && !observacao) return null;
 
@@ -277,7 +279,7 @@ function montarPayloadPorTema(tema) {
             ...base,
             escola: escola || null,
             status: null,
-            descricao: observacao || "Termo de visita",
+            descricao: observacao || (tema === "termo" ? "Termo de visita" : "BI manutenção predial"),
             data_referencia: dataVisita || null,
             tema_visita: temaVisita || null,
             observacao_extra: observacao || null,
@@ -307,6 +309,10 @@ function coletarArquivosDoTema(tema) {
         const input = document.getElementById("termo-anexos");
         return input ? input.files : null;
     }
+    if (tema === "bi_manutencao") {
+        const input = document.getElementById("bi-anexos");
+        return input ? input.files : null;
+    }
     return null;
 }
 
@@ -315,8 +321,8 @@ async function processarAnexosParaRegistro(registro, tema, fileList, modo = "app
     const novos = await uploadAnexosParaRegistro(registro.id, tema, fileList);
 
     if (!novos.length) return registro;
-    let anexosAtualizados;
 
+    let anexosAtualizados;
     if (modo === "replace") {
         anexosAtualizados = novos;
     } else {
@@ -337,7 +343,6 @@ async function processarAnexosParaRegistro(registro, tema, fileList, modo = "app
 
     return data;
 }
-
 
 async function uploadAnexosParaRegistro(registroId, tema, fileList) {
     const files = Array.from(fileList || []);
@@ -414,10 +419,8 @@ async function salvarRegistro(payload, tema, anexosFiles) {
     let registro = data;
 
     if (anexosFiles && anexosFiles.length) {
-        // cadastro novo: acrescenta anexos
         registro = await processarAnexosParaRegistro(registro, tema, anexosFiles, "append");
     }
-
 
     registros.unshift(registro);
     renderTabela();
@@ -445,10 +448,8 @@ async function atualizarRegistro(id, payload, tema, anexosFiles) {
     let registro = data[0];
 
     if (anexosFiles && anexosFiles.length) {
-        // edição: substitui anexos antigos pelos novos
         registro = await processarAnexosParaRegistro(registro, tema, anexosFiles, "replace");
     }
-
 
     registros = registros.map(r => (r.id === registro.id ? registro : r));
     renderTabela();
@@ -514,14 +515,16 @@ function entrarModoEdicao(registro) {
             registro.observacao_extra || registro.descricao || "";
     }
 
-    if (registro.tipo === "termo") {
-        document.getElementById("termo-escola").value =
+    if (registro.tipo === "termo" || registro.tipo === "bi_manutencao") {
+        const prefix = registro.tipo === "termo" ? "termo" : "bi";
+
+        document.getElementById(`${prefix}-escola`).value =
             registro.escola || "";
-        document.getElementById("termo-data").value =
+        document.getElementById(`${prefix}-data`).value =
             registro.data_referencia || "";
-        document.getElementById("termo-tema").value =
+        document.getElementById(`${prefix}-tema`).value =
             registro.tema_visita || "";
-        document.getElementById("termo-observacao").value =
+        document.getElementById(`${prefix}-observacao`).value =
             registro.observacao_extra || registro.descricao || "";
     }
 }
@@ -592,6 +595,7 @@ function renderTabela() {
             countSpan.className = "anexos-count";
             countSpan.textContent = `${anexos.length} arquivo(s)`;
             tdAnexos.appendChild(countSpan);
+
             const linksWrapper = document.createElement("div");
             linksWrapper.className = "anexos-links";
 
@@ -612,7 +616,6 @@ function renderTabela() {
         }
 
         tr.appendChild(tdAnexos);
-
 
         const tdAcoes = document.createElement("td");
         const actions = document.createElement("div");
@@ -664,6 +667,8 @@ function labelTema(tipo) {
             return "Solicitação de manutenção";
         case "termo":
             return "Termo de visita";
+        case "bi_manutencao":
+            return "BI manutenção predial";
         default:
             return tipo || "-";
     }
