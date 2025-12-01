@@ -376,6 +376,12 @@ tbody tr:hover {
     color: #4ade80;
 }
 
+.badge.nao_atendido {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fecaca;
+}
+
+
 .action-btn {
     border-radius: 999px;
     border: 1px solid rgba(148, 163, 184, 0.6);
@@ -872,6 +878,8 @@ tbody tr:hover {
         color: var(--text-muted);
     }
 
+    /* RODAPÉ */
+
     .site-footer {
         max-width: 1120px;
         margin: 0 auto 18px;
@@ -883,6 +891,8 @@ tbody tr:hover {
         color: var(--text-muted);
         opacity: 0.9;
     }
+
+    /* RESPONSIVO */
 
     @media (max-width: 768px) {
         .site-header-inner {
@@ -924,6 +934,8 @@ tbody tr:hover {
     color: var(--text-muted);
     opacity: 0.9;
 }
+
+/* RESPONSIVO */
 
 @media (max-width: 768px) {
     .site-header-inner {
@@ -1002,6 +1014,7 @@ tbody tr:hover {
         text-decoration: none;
         background: rgba(15, 23, 42, 0.95);
         color: #f9fafb;
+        /* branco */
         cursor: pointer;
         transition: all 0.16s ease-out;
     }
@@ -1011,7 +1024,7 @@ tbody tr:hover {
         color: var(--accent-strong);
         transform: translateY(-1px);
         text-decoration: underline;
-       
+        /* se não quiser sublinhado, pode remover */
     }
 
 
