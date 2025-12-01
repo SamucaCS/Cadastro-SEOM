@@ -42,10 +42,11 @@ const ESCOLAS_SEOM = [
     "OLAVO LEONEL FERREIRA PROF",
     "OSWALDO DE OLIVEIRA LIMA",
     "PAULO KOBAYASHI PROF",
-    "RAUL BRASIL PROF EE",
+    "Doutor José Eduardo Vieira Raduan",
     "RAUL BRASIL PROF",
     "ROBERTO BIANCHI",
     "SEBASTIAO PEREIRA VIDAL",
+    "TACITO ZANCHETTA PREFEITO",
     "TOCHICHICO YOCHICAVA PROF",
     "TOKUZO TERAZAKI",
     "YOLANDA BASSI PROFª",
@@ -678,12 +679,15 @@ function labelStatus(status) {
     switch (status) {
         case "em_andamento":
             return "Em andamento";
+        case "nao_atendido":
+            return "Não atendido";
         case "concluido":
             return "Concluído";
         default:
             return status || "-";
     }
 }
+
 
 function resumoDescricao(texto, limite = 80) {
     if (!texto) return "-";
